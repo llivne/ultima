@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from worker import init_workers, UploaderWorkers
 
-
 app = FastAPI()
 workers = init_workers()
 
