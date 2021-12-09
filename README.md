@@ -1,7 +1,7 @@
 # ultima
 
-###Install:
+##Install:
 pip install -r ./requirements.txt
 
-###Run:
+##Run:
 uvicorn main:app
