@@ -16,5 +16,5 @@ class Uploader(BaseModel):
 
 @app.post("/uploader/")
 async def create_upload(uploader: Uploader):
-    UploaderWorkers.add(uploader)
+    UploaderWorkers.add(uploader.dict())
     return uploader

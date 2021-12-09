@@ -4,9 +4,6 @@ import controller
 import configparser
 
 
-controller = controller.UploaderController()
-
-
 class UploaderWorkers (threading.Thread):
     queueLock = threading.Lock()
     workQueue = Queue()
@@ -15,6 +12,7 @@ class UploaderWorkers (threading.Thread):
     def __init__(self, worker_id):
         threading.Thread.__init__(self)
         self.worker_id = worker_id
+        self.controller = controller.MockedUploaderController()
 
     def run(self):
         while True:
@@ -23,7 +21,7 @@ class UploaderWorkers (threading.Thread):
             if not self.workQueue.empty():
                 item = self.workQueue.get()
                 self.queueLock.release()
-                controller.do_upload(item, self.worker_id)
+                self.controller.upload_item(item, self.worker_id)
             else:
                 self.condition.clear()
                 self.queueLock.release()
