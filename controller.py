@@ -1,5 +1,7 @@
+import filecmp
 import os
 import shutil
+import hashlib
 
 
 class UploaderController:
@@ -16,7 +18,6 @@ class MockedUploaderController(UploaderController):
 
         src = item["Source_folder"]
         dest = item["Destination_bucket"]
-
         marked_files, marked_dirs = self.collect_source(src, dest)
         self.create_dirs_in_target(marked_dirs)
         self.upload_files(marked_files)
@@ -31,7 +32,7 @@ class MockedUploaderController(UploaderController):
             for name in files:
                 source_file = os.path.join(root, name)
                 dest_file = os.path.join(root.replace(src, dest), name)
-                if not os.path.exists(dest_file) or not self.identical_objects(source_file, dest_file):
+                if not os.path.exists(dest_file) or not filecmp.cmp(source_file, dest_file, shallow=True):
                     marked_files.append([source_file, dest_file])
             for name in dirs:
                 source_dir = os.path.join(root, name)
@@ -41,15 +42,24 @@ class MockedUploaderController(UploaderController):
 
         return marked_files, marked_dirs
 
-    def identical_objects(self, source_file, dest_file):
-        return True
+    @staticmethod
+    def digest_file(file):
+        hash_md5 = hashlib.md5()
+        with open(file, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
 
     def valid_dest_files(self, marked_files):
-        valid_flag = False
-        while not valid_flag:
-            valid_flag = self.identical_objects(marked_files[0], marked_files[1])
-            if not valid_flag:
-                self.upload_files(marked_files)
+        for file in marked_files:
+            while True:
+                digest_source = self.digest_file(file[0])
+                digest_dest = self.digest_file(file[1])
+                if digest_source != digest_dest:
+                    print(f"{file[0]} was not uploaded correctly. Trying again...")
+                    self.upload_files(marked_files)
+                else:
+                    break
 
     @staticmethod
     def create_dirs_in_target(marked_dirs):
