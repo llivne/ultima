@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  web:
+    restart: always
+    build: .
+    command: uvicorn main:app
+    volumes:
+      - ./persist:/home/app/persist
+    ports:
+      - 8000:8000
+  redis:
+    restart: always
+    image: redis:alpine
+  celery:
+    restart: always
+    build:
+      context: .
+    command: celery -A task worker -l info
+    volumes:
+      - .:/home/app
+    depends_on:
+      - redis
+      - web
+  celery_beat:
+    restart: always
+    build:
+      context: .
+    command: celery -A task beat
+    volumes:
+      - ./persist:/home/app/persist
+    depends_on:
+      - redis
+      - web

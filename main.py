@@ -23,7 +23,7 @@ async def create_upload(uploader: Uploader):
 
 def PersistUploader(item):
     import pickle
-    filename = "persist_picklefile"
+    filename = "persist/persist_picklefile"
     with open(filename, "ab") as fp:
         pickle.dump(item, fp)
 
@@ -36,5 +36,5 @@ def PersistUploader(item):
         except EOFError:
             pass
 
-    print(len(data))
-    print(data)
+    # print(len(data))
+    # print(data)
