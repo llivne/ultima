@@ -5,14 +5,8 @@ import hashlib
 
 
 class UploaderController:
-    def upload_item(self, item, thread_name):
-        raise NotImplementedError('function not implemented')
+    current_uploading_list = []
 
-    def validate_upload(self):
-        raise NotImplementedError('function not implemented')
-
-
-class MockedUploaderController(UploaderController):
     def upload_item(self, item, thread_name):
         print(f"uploading {item} with {thread_name}")
 
@@ -25,7 +19,24 @@ class MockedUploaderController(UploaderController):
 
         print(f"done_uploading with {thread_name}")
 
-    def collect_source(self, src, dest):
+    def valid_dest_files(self):
+        raise NotImplementedError('function not implemented')
+
+    @staticmethod
+    def collect_source(src, dest):
+        raise NotImplementedError('function not implemented')
+
+    @staticmethod
+    def create_dirs_in_target(marked_dirs):
+        raise NotImplementedError('function not implemented')
+
+    def upload_files(self, marked_files):
+        raise NotImplementedError('function not implemented')
+
+
+class MockedUploaderController(UploaderController):
+    @staticmethod
+    def collect_source(src, dest):
         marked_files = []
         marked_dirs = []
         for root, dirs, files in os.walk(src):
@@ -33,7 +44,7 @@ class MockedUploaderController(UploaderController):
                 source_file = os.path.join(root, name)
                 dest_file = os.path.join(root.replace(src, dest), name)
                 if not os.path.exists(dest_file) or not filecmp.cmp(source_file, dest_file, shallow=True):
-                    marked_files.append([source_file, dest_file])
+                    marked_files.append((source_file, dest_file))
             for name in dirs:
                 source_dir = os.path.join(root, name)
                 dest_dir = os.path.join(root.replace(src, dest), name)
@@ -67,8 +78,12 @@ class MockedUploaderController(UploaderController):
             os.makedirs(dir[1])
             print(f"uploading folder: {dir[1]}")
 
-    @staticmethod
-    def upload_files(marked_files):
+    def upload_files(self, marked_files):
         for file in marked_files:
-            shutil.copy2(file[0], file[1])
-            print(f"uploading file {file[1]}")
+            if file not in self.current_uploading_list:
+                print(f"uploading file {file[1]} started...")
+                self.current_uploading_list.append(file)
+                shutil.copy2(file[0], file[1])
+                self.current_uploading_list.append(file[0])
+                self.current_uploading_list.remove(file)
+                print(f"uploading file {file[1]} done!")

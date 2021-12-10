@@ -30,7 +30,7 @@ class UploaderWorkers (threading.Thread):
     @classmethod
     def add(cls, item):
         cls.queueLock.acquire()
-        print(f"Adding {item}")
+        print(f"Adding {item} to upload-queue")
         cls.workQueue.put(item)
         cls.queueLock.release()
         cls.condition.set()

@@ -17,4 +17,24 @@ class Uploader(BaseModel):
 @app.post("/uploader/")
 async def create_upload(uploader: Uploader):
     UploaderWorkers.add(uploader.dict())
+    PersistUploader(uploader.dict())
     return uploader
+
+
+def PersistUploader(item):
+    import pickle
+    filename = "persist_picklefile"
+    with open(filename, "ab") as fp:
+        pickle.dump(item, fp)
+
+    #To load from pickle file
+    data = []
+    with open(filename, 'rb') as fr:
+        try:
+            while True:
+                data.append(pickle.load(fr))
+        except EOFError:
+            pass
+
+    print(len(data))
+    print(data)
