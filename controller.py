@@ -4,6 +4,7 @@ import shutil
 import hashlib
 import re
 
+
 class UploaderController:
     current_uploading_list = []
 

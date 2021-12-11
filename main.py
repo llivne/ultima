@@ -8,6 +8,8 @@ from worker import init_workers, UploaderWorkers
 app = FastAPI()
 workers = init_workers()
 persist = PersistUploader()
+persist.upload_items()  # upload all the files listed to be monitored during initial service boot up
+
 
 class Uploader(BaseModel):
     Upload_id: str

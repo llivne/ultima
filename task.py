@@ -6,7 +6,6 @@ from persist import PersistUploader
 celery_url = "redis://redis:6379"
 app = Celery("task", broker=celery_url)
 persist = PersistUploader()
-controller = controller.MockedUploaderController()
 
 
 @app.on_after_configure.connect
@@ -18,14 +17,4 @@ def setup_periodic_tasks(sender, **kwargs):
 
 @app.task
 def perform_periodic_upload():
-    items = persist.load_items()
-    uploaded_items = []
-    for item in items:
-        src = item["Source_folder"]
-        dest = item["Destination_bucket"]
-        item_tuple = (src, dest)
-        if item_tuple not in uploaded_items:
-            controller.upload_item(item, "celery")
-            uploaded_items.append(item_tuple)
-        else:
-            print(f"{item_tuple} already uploaded in this interval")
+    persist.upload_items()
