@@ -1,11 +1,13 @@
 from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
+
+from persist import PersistUploader
 from worker import init_workers, UploaderWorkers
 
 app = FastAPI()
 workers = init_workers()
-
+persist = PersistUploader()
 
 class Uploader(BaseModel):
     Upload_id: str
@@ -17,24 +19,6 @@ class Uploader(BaseModel):
 @app.post("/uploader/")
 async def create_upload(uploader: Uploader):
     UploaderWorkers.add(uploader.dict())
-    PersistUploader(uploader.dict())
+    persist.add_new_item(uploader.dict())
     return uploader
 
-
-def PersistUploader(item):
-    import pickle
-    filename = "persist/persist_picklefile"
-    with open(filename, "ab") as fp:
-        pickle.dump(item, fp)
-
-    #To load from pickle file
-    data = []
-    with open(filename, 'rb') as fr:
-        try:
-            while True:
-                data.append(pickle.load(fr))
-        except EOFError:
-            pass
-
-    # print(len(data))
-    # print(data)

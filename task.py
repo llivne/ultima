@@ -1,30 +1,31 @@
+import controller
 from celery import Celery
-from celery.schedules import crontab
+from persist import PersistUploader
 
 
 celery_url = "redis://redis:6379"
 app = Celery("task", broker=celery_url)
+persist = PersistUploader()
+controller = controller.MockedUploaderController()
 
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    # Calls test('hello') every 10 seconds.
-    sender.add_periodic_task(10.0, test.s('hello'), name='add every 10')
 
-    # Calls test('world') every 30 seconds
-    sender.add_periodic_task(30.0, test.s('world'), expires=10)
+    # Calls perform_upload() every 30 seconds
+    sender.add_periodic_task(10.0, perform_periodic_upload.s(), expires=30)
 
-    # Executes every Monday morning at 7:30 a.m.
-    sender.add_periodic_task(
-        crontab(hour=7, minute=30, day_of_week=1),
-        test.s('Happy Mondays!'),
-    )
 
 @app.task
-def test(arg):
-    print(arg)
-
-@app.task
-def add(x, y):
-    z = x + y
-    print(z)
+def perform_periodic_upload():
+    items = persist.load_items()
+    uploaded_items = []
+    for item in items:
+        src = item["Source_folder"]
+        dest = item["Destination_bucket"]
+        item_tuple = (src, dest)
+        if item_tuple not in uploaded_items:
+            controller.upload_item(item, "celery")
+            uploaded_items.append(item_tuple)
+        else:
+            print(f"{item_tuple} already uploaded in this interval")
