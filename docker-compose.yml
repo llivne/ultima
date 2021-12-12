@@ -18,7 +18,8 @@ services:
       context: .
     command: celery -A task worker -l info
     volumes:
-      - .:/home/app
+      - /:/home/app/root
+      - ./persist_data:/home/app/persist_data
     depends_on:
       - redis
       - web

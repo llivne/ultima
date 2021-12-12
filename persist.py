@@ -25,6 +25,9 @@ class PersistUploader:
 
     def upload_items(self):
         items = self.load_items()
+        print(f"{len(items)} items were set to be monitored for uploading."
+              f" checking if items were modified and updating if required.")
+
         uploaded_items = []
         for item in items:
             src = item["Source_folder"]

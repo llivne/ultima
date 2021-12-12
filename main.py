@@ -22,5 +22,5 @@ class Uploader(BaseModel):
 async def create_upload(uploader: Uploader):
     UploaderWorkers.add(uploader.dict())
     persist.add_new_item(uploader.dict())
-    return uploader
+    return "Request was successfully queued"
 

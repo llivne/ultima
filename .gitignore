@@ -1,4 +1,4 @@
 /.idea/
 /__pycache__/
 
-persist_data/persist_picklefile
+/persist_data/persist_picklefile
